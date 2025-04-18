@@ -1,0 +1,7 @@
+Flask
+torch
+torch_geometric
+scikit-learn
+pandas
+numpy
+joblib

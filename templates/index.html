@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Interaction Checker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">Drug Interaction Checker</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card p-4 shadow">
+                    <div class="mb-3">
+                        <label for="drug1" class="form-label">Enter Drug 1</label>
+                        <input type="text" class="form-control" id="drug1" placeholder="e.g., Aspirin">
+                    </div>
+                    <div class="mb-3">
+                        <label for="drug2" class="form-label">Enter Drug 2</label>
+                        <input type="text" class="form-control" id="drug2" placeholder="e.g., Ibuprofen">
+                    </div>
+                    <button id="checkBtn" class="btn btn-primary w-100">Check Interaction</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <h3>Results</h3>
+                <div id="results" class="mt-3">
+                    <!-- Results will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('checkBtn').addEventListener('click', async () => {
+            const drug1 = document.getElementById('drug1').value.trim();
+            const drug2 = document.getElementById('drug2').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            if (!drug1 || !drug2) {
+                resultsDiv.innerHTML = '<div class="alert alert-warning">Please enter both drugs.</div>';
+                return;
+            }
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `drug1=${encodeURIComponent(drug1)}&drug2=${encodeURIComponent(drug2)}`
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                let html = '<div class="list-group">';
+                data.results.forEach(result => {
+                    html += `<div class="list-group-item">
+                                <strong>${result.type}</strong> 
+                                <span class="badge bg-success ms-2">${(result.probability * 100).toFixed(1)}%</span>
+                             </div>`;
+                });
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
